@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JSON Studio — Offline Explorer</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;color-scheme:dark;--bg:#0b1020;--panel:#121b30;--panel2:#19243a;--line:#2a3851;--fg:#e6edf8;--muted:#9bacbf;--accent:#77b8ff;--tag:#7fd3f7;--attr:#e6b978;--val:#a7e6b1;--danger:#ff8c99}body.light{color-scheme:light;--bg:#f4f7fc;--panel:#fff;--panel2:#eef3fa;--line:#d7e0ed;--fg:#1c2b40;--muted:#5b6d84;--accent:#155db4;--tag:#096f9a;--attr:#98621e;--val:#277b47;--danger:#a92c42}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg)}button,textarea,input{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--fg);border-radius:9px;padding:9px 12px}button:hover{border-color:var(--accent)}button.primary{background:#2875cf;color:white;border-color:#2875cf}button:disabled{opacity:.45;cursor:not-allowed}header{padding:22px clamp(16px,3vw,42px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}h1{margin:0;font-size:23px;letter-spacing:-.7px}header p{color:var(--muted);margin:5px 0 0;font-size:13px}.shell{max-width:1600px;margin:auto;padding:22px clamp(16px,3vw,42px);display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:18px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;overflow:hidden}.panelhead{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}.panelhead h2{font-size:14px;margin:0}.pad{padding:16px}.hint{font-size:12px;color:var(--muted);line-height:1.6}.inputarea{width:100%;height:250px;resize:vertical;background:var(--bg);border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:12px;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;outline:none}.inputarea:focus,input:focus{border-color:var(--accent)}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.navlist{display:flex;flex-direction:column;gap:4px;max-height:400px;overflow:auto}.navitem{width:100%;text-align:left;background:transparent;border-color:transparent;display:flex;justify-content:space-between;gap:8px}.navitem:hover{background:var(--panel2)}.count{font-size:11px;color:var(--muted)}.right{min-width:0}.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}.toolbar input{background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--fg);padding:9px 11px;min-width:180px;flex:1;outline:none}.stats{padding:10px 16px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}.stats .path{cursor:pointer;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--accent);word-break:break-all}.tree{padding:16px;overflow:auto;min-height:440px;max-height:calc(100vh - 235px);font:12.5px/1.9 ui-monospace,SFMono-Regular,Consolas,monospace}.node{margin-left:18px;border-left:1px solid var(--line);padding-left:11px}.node.root{margin-left:0;border-left:0;padding-left:0}.node-row{display:flex;align-items:baseline;white-space:pre;width:max-content;min-width:100%;border-radius:5px;cursor:default}.node-row:hover{background:var(--panel2)}.toggle{border:0;background:none;padding:0 5px 0 0;color:var(--muted);font:inherit;width:17px;flex-shrink:0}.toggle.leaf{visibility:hidden}.tag{color:var(--tag)}.attr{color:var(--attr)}.value{color:var(--val)}.kw{color:var(--accent)}.punct{color:var(--muted)}.muted{color:var(--muted)}.children.collapsed{display:none}.match{background:#e6a90055;border-radius:3px;outline:1px solid #e6a90099}.hidden{display:none!important}.error{color:var(--danger);white-space:pre-wrap;font-size:12px;margin-top:10px}.empty{color:var(--muted);text-align:center;padding:80px 10px}.badge{background:var(--panel2);border:1px solid var(--line);padding:4px 9px;border-radius:20px;font-size:11px;color:var(--muted)}@media(max-width:880px){.shell{grid-template-columns:1fr}.tree{max-height:65vh}}@media print{header,.left,.toolbar{display:none}.shell{display:block}.tree{max-height:none}}
+</style></head><body><header><div><h1>◈ JSON Studio <span class="badge">Offline • Self-contained</span></h1><p>Paste raw JSON. Explore, search, navigate, and export without sending data anywhere.</p></div><button id="theme">☀ Toggle theme</button></header>
+<main class="shell"><aside class="left"><section class="panel"><div class="panelhead"><h2>JSON Input</h2><span class="badge">Private / local</span></div><div class="pad"><textarea class="inputarea" id="source" spellcheck="false" placeholder="Paste JSON here, including compact API responses or quoted/escaped JSON strings..."></textarea><div class="actions"><button class="primary" id="parse">Explore JSON</button><button id="clear">Clear</button><button id="sample">Load sample</button></div><div id="error" class="error" role="alert"></div><p class="hint">Supports objects, arrays, nested data, and JSON escaped inside string values (auto-unwrapped). Click any row to see its path. Nothing is uploaded.</p></div></section><section class="panel" style="margin-top:18px"><div class="panelhead"><h2>Section Navigator</h2><span id="navcount" class="count">0 sections</span></div><div class="pad"><div id="navigation" class="navlist"><span class="hint">Parse JSON to see sections.</span></div></div></section></aside>
+<section class="right panel"><div class="panelhead"><h2>Interactive JSON Tree</h2><span id="status" class="badge">Waiting for JSON</span></div><div class="toolbar"><input id="search" type="search" placeholder="Search keys, values…" aria-label="Search JSON"><button id="expand">Expand all</button><button id="collapse">Collapse all</button><button id="copy">Copy formatted</button><button id="minify">Copy minified</button><button id="download">Download JSON</button></div><div class="stats"><span id="nodes">Nodes: —</span><span id="matches">Matches: —</span><span id="depth">Max depth: —</span><span id="path" class="path" title="Click to copy path"></span></div><div class="tree" id="tree"><div class="empty">Your JSON tree will appear here.<br><small>Paste JSON on the left and click Explore JSON.</small></div></div></section></main>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+let data=null,formatted='',minified='',records=[],maxDepth=0;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isObj=v=>v!==null&&typeof v==='object';
+const typeOf=v=>v===null?'null':Array.isArray(v)?'array':typeof v;
+const idRe=/^[A-Za-z_$][\w$]*$/;
+const childPath=(p,k,arr)=>arr?p+'['+k+']':p+(idRe.test(k)?'.'+k:'["'+k.replace(/"/g,'\\"')+'"]');
+
+// Unwrap quoted / escaped JSON strings (repeat up to 3 times)
+function normalize(s){
+  s=s.trim();
+  let v=JSON.parse(s);
+  for(let i=0;i<3&&typeof v==='string';i++){
+    const t=v.trim();
+    if(!/^[\[{"]/.test(t))break;
+    try{v=JSON.parse(t)}catch{break}
+  }
+  return v;
+}
+
+function valueHTML(v){
+  switch(typeOf(v)){
+    case'string':{const p=v.length>260?v.slice(0,260)+'…':v;return'<span class="punct">"</span><span class="value">'+esc(JSON.stringify(p).slice(1,-1))+'</span><span class="punct">"</span>'}
+    case'number':return'<span class="attr">'+esc(v)+'</span>';
+    default:return'<span class="kw">'+esc(v)+'</span>';
+  }
+}
+
+function renderNode(key,v,d,path,inArray){
+  maxDepth=Math.max(maxDepth,d);
+  const type=typeOf(v),container=isObj(v);
+  const keys=container?Object.keys(v):[];
+  const wrap=document.createElement('div');wrap.className='node'+(d===0?' root':'');
+  const row=document.createElement('div');row.className='node-row';
+  const toggle=document.createElement('button');
+  toggle.className='toggle'+(keys.length?'':' leaf');
+  toggle.textContent=keys.length?'▾':'·';
+  toggle.title='Expand or collapse';
+  row.append(toggle);
+  const open=type==='array'?'[':'{',close=type==='array'?']':'}';
+  let keyHTML='';
+  if(key!==null)keyHTML=inArray?'<span class="muted">'+esc(key)+'</span><span class="punct">: </span>':'<span class="punct">"</span><span class="tag">'+esc(key)+'</span><span class="punct">": </span>';
+  let body;
+  if(container){
+    body=keys.length
+      ?'<span class="punct">'+open+'</span>'
+      :'<span class="punct">'+open+close+'</span>';
+  }else body=valueHTML(v);
+  const code=document.createElement('span');code.innerHTML=keyHTML+body;
+  row.append(code);wrap.append(row);
+  row.onclick=e=>{if(e.target===toggle)return;$('path').textContent=path;$('path').dataset.p=path};
+  const rec={el:wrap,row,toggle,children:null,v,
+    text:((key===null?'':String(key))+' '+(container?'':String(v))).toLowerCase()};
+  records.push(rec);
+  if(keys.length){
+    const holder=document.createElement('div');holder.className='children';rec.children=holder;
+    const arr=type==='array';
+    for(const k of keys)holder.append(renderNode(k,v[k],d+1,childPath(path,k,arr),arr));
+    const end=document.createElement('div');end.className='node-row';
+    end.innerHTML='<span class="muted">'+close+'</span>';
+    holder.append(end);wrap.append(holder);
+    toggle.onclick=()=>setOpen(rec,holder.classList.contains('collapsed'));
+  }
+  return wrap;
+}
+
+function setOpen(r,open){if(!r.children)return;r.children.classList.toggle('collapsed',!open);r.toggle.textContent=open?'▾':'▸'}
+
+function parse(){
+  try{
+    const raw=$('source').value;
+    if(!raw.trim())throw Error('Paste JSON before exploring.');
+    let v;
+    try{v=normalize(raw)}catch(e){throw Error('Invalid JSON: '+e.message)}
+    data=v;formatted=JSON.stringify(v,null,2)+'\n';minified=JSON.stringify(v);
+    records=[];maxDepth=0;
+    $('tree').replaceChildren(renderNode(null,v,0,'$',false));
+    $('nodes').textContent='Nodes: '+records.length;
+    $('depth').textContent='Max depth: '+maxDepth;
+    $('status').textContent='JSON loaded ('+typeOf(v)+')';
+    $('error').textContent='';$('path').textContent='';
+    buildNav();search();
+  }catch(e){$('error').textContent=e.message;$('status').textContent='Parse error'}
+}
+
+function countNodes(v){if(!isObj(v))return 1;let n=1;for(const k in v)n+=countNodes(v[k]);return n}
+
+function buildNav(){
+  // Descend through single-child wrappers (e.g. {"response":{...}}) to find meaningful sections
+  let target=data,rec=records[0];
+  while(isObj(target)&&Object.keys(target).length===1&&isObj(target[Object.keys(target)[0]])){
+    const k=Object.keys(target)[0];target=target[k];
+    rec=records.find(r=>r.v===target)||rec;
+  }
+  const nav=$('navigation');nav.replaceChildren();
+  if(!isObj(target)){$('navcount').textContent='0 sections';nav.innerHTML='<span class="hint">No sections (scalar value).</span>';return}
+  const keys=Object.keys(target),arr=Array.isArray(target);
+  $('navcount').textContent=keys.length+' sections';
+  for(const k of keys){
+    const child=target[k];
+    const b=document.createElement('button');b.className='navitem';
+    const info=isObj(child)?(Array.isArray(child)?child.length+' items':Object.keys(child).length+' keys'):typeOf(child);
+    b.innerHTML='<span>'+esc(arr?'['+k+']':k)+'</span><span class="count">'+info+(isObj(child)?' · '+countNodes(child)+' nodes':'')+'</span>';
+    b.onclick=()=>{
+      const r=records.find(x=>x.v===child&&x.el.parentElement&&x.el.parentElement.parentElement&&true&&(isObj(child)||x.text.includes(String(child).toLowerCase())));
+      // fall back to locating by position within the target's holder
+      const idx=keys.indexOf(k);
+      const holderChildren=rec.children?Array.from(rec.children.children).filter(c=>c.classList.contains('node')):[];
+      const el=holderChildren[idx]||(r&&r.el);
+      if(!el)return;
+      let cur=el.parentElement;
+      while(cur){if(cur.classList&&cur.classList.contains('children'))cur.classList.remove('collapsed');cur=cur.parentElement}
+      for(const x of records)if(x.children)x.toggle.textContent=x.children.classList.contains('collapsed')?'▸':'▾';
+      const row=el.querySelector('.node-row');
+      row.scrollIntoView({behavior:'smooth',block:'center'});
+      row.style.outline='2px solid var(--accent)';setTimeout(()=>row.style.outline='',1400);
+    };
+    nav.append(b);
+  }
+}
+
+function search(){
+  const q=$('search').value.trim().toLowerCase();let matches=0;
+  for(const r of records){r.row.classList.remove('match');r.el.classList.remove('hidden');if(q&&r.text.includes(q)){matches++;r.row.classList.add('match')}}
+  if(q){
+    for(const r of records){
+      const hit=r.row.classList.contains('match');
+      const descendant=r.el.querySelectorAll('.node-row.match').length>0;
+      r.el.classList.toggle('hidden',!hit&&!descendant);
+      if(descendant&&r.children)setOpen(r,true);
+    }
+  }
+  $('matches').textContent='Matches: '+(q?matches:'—');
+}
+
+function flash(btn,label,msg){btn.textContent=msg;setTimeout(()=>btn.textContent=label,1400)}
+async function copyText(text){
+  try{await navigator.clipboard.writeText(text)}
+  catch{const t=document.createElement('textarea');t.value=text;document.body.append(t);t.select();document.execCommand('copy');t.remove()}
+}
+function dl(){
+  if(!formatted)return;
+  const blob=new Blob([formatted],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='formatted.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+$('parse').onclick=parse;
+$('clear').onclick=()=>{
+  $('source').value='';$('search').value='';data=null;formatted=minified='';records=[];
+  $('tree').innerHTML='<div class="empty">Your JSON tree will appear here.</div>';
+  $('navigation').textContent='Parse JSON to see sections.';
+  $('status').textContent='Waiting for JSON';$('error').textContent='';
+  $('nodes').textContent='Nodes: —';$('matches').textContent='Matches: —';$('depth').textContent='Max depth: —';
+  $('navcount').textContent='0 sections';$('path').textContent='';
+};
+$('sample').onclick=()=>{
+  $('source').value='{"searchResponse":{"result":"success","objects":{"auc":{"imsi":"123456789012345"},"hlr":{"imsiActive":true,"pdpContext":[{"apn":"example.test","qos":5},{"apn":"ims.test","qos":null}]},"hss":{"registrationStatus":"registered","scscf":{"name":"sip:scscf.example.test:6060","priority":1.5}}}}}';
+  parse();
+};
+$('expand').onclick=()=>records.forEach(r=>setOpen(r,true));
+$('collapse').onclick=()=>records.forEach((r,i)=>setOpen(r,i===0));
+$('search').oninput=search;
+$('download').onclick=dl;
+$('copy').onclick=async()=>{if(!formatted)return;await copyText(formatted);flash($('copy'),'Copy formatted','Copied!')};
+$('minify').onclick=async()=>{if(!minified)return;await copyText(minified);flash($('minify'),'Copy minified','Copied!')};
+$('path').onclick=async()=>{const p=$('path').dataset.p;if(p){await copyText(p);const old=$('path').textContent;$('path').textContent='Copied: '+p;setTimeout(()=>$('path').textContent=old,1200)}};
+$('theme').onclick=()=>document.body.classList.toggle('light');
+})();
+</script></body></html>
