@@ -69,7 +69,7 @@ const DEFAULT_INIT=`%%{init: {
 const SAMPLE=DEFAULT_INIT+`
 sequenceDiagram
     autonumber
-    title Tesla SIM Provisioning
+    title M2M eSIM Provisioning
     participant ts  as Supply Chain
     participant e1  as eUM
     participant tft as Secure<br/>Transfer
@@ -80,7 +80,7 @@ sequenceDiagram
 
     rect rgb(226,0,116)
     Note over ts,cc: Order & profile preparation
-    ts  ->> e1  : Place order for Tesla SKU<br/>(with input file)
+    ts  ->> e1  : Place order for Customer SKU<br/>(with input file)
     e1  ->> tft : Generate profile, load into SM-DP,<br/>send output file
     tft ->> cc  : Files loaded
     end
