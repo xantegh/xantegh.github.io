@@ -69,14 +69,14 @@ const DEFAULT_INIT=`%%{init: {
 const SAMPLE=DEFAULT_INIT+`
 sequenceDiagram
     autonumber
-    title M2M eSIM Provisioning
+    title Sample Diagram
     participant ts  as Supply Chain
     participant e1  as eUM
     participant tft as Secure<br/>Transfer
     participant cc  as Control<br/>Center
     participant tn  as Network
     participant c1  as Customer
-    participant emp as EMP
+    participant emp as Customer-Facing<br/>API
 
     rect rgb(226,0,116)
     Note over ts,cc: Order & profile preparation
