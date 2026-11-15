@@ -27,6 +27,14 @@ window.SITE_CONFIG = {
       icon: "</>",
       tags: ["XML", "Explorer"],
       color: "#ff8a5c"
+    },
+    {
+      name: "Sequence Studio",
+      description: "Write Mermaid-style sequence syntax. The diagram updates as you type, with no data sent anywhere.",
+      url: "xml_explorer.html",
+      icon: "</>",
+      tags: ["Mermaid", "Sequence", "Diagram"],
+      color: "#77b8ff"
     }
     // Next tool goes here, e.g.:
     // { name: "Sequence Studio", description: "…", url: "sequence_studio.html", icon: "⇄", tags: ["Diagram"], color: "#b78cff" },
